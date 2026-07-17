@@ -1,20 +1,13 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../utils/api";
 
 export default function ClientSliderService() {
   const [logos, setLogos] = useState([]);
 
-  const tableId = "m382v6jmtock4gv";
-  const token = import.meta.env.VITE_NOCODB_ACCESS_TOKEN;
-
   useEffect(() => {
     const fetchData = async () => {
-      const url = `https://app.nocodb.com/api/v2/tables/${tableId}/records?limit=100`;
-
       try {
-        const res = await axios.get(url, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await api.get("/api/clients-logo");
 
         console.log("🔍 Raw API Response:", res.data);
 
@@ -31,11 +24,21 @@ export default function ClientSliderService() {
 
           if (Array.isArray(row?.logoImage) && row.logoImage.length > 0) {
             const first = row.logoImage[0];
-            logo = first?.signedUrl || first?.url || "";
+            logo = typeof first === "string" ? first : (first?.signedUrl || first?.url || "");
           } else if (row?.logoImage && typeof row.logoImage === "object") {
             logo = row.logoImage?.signedUrl || row.logoImage?.url || "";
           } else if (typeof row?.logoImage === "string") {
-            logo = row.logoImage;
+            if (row.logoImage.startsWith("[")) {
+              try {
+                const parsed = JSON.parse(row.logoImage);
+                const first = parsed[0];
+                logo = typeof first === "string" ? first : (first?.url || "");
+              } catch {
+                logo = row.logoImage;
+              }
+            } else {
+              logo = row.logoImage;
+            }
           }
 
           return {
@@ -69,7 +72,7 @@ export default function ClientSliderService() {
     };
 
     fetchData();
-  }, [tableId, token]);
+  }, []);
 
   const extendedCompanies = logos;
   return (

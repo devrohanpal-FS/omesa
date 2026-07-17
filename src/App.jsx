@@ -14,8 +14,10 @@ import WhatsAppChat from "./Components/WhatsapChat"
 import CaseStudies from "./Pages/CaseStudies"
 import UpcomingEvents from "./Pages/UpcomingEvents"
 import CaseStudyDetail from "./Pages/CaseStudyDetail"
-
-
+import EventDetails from "./Pages/EventDetails"
+import Login from "./Pages/Login"
+import Signup from "./Pages/Signup"
+import Dashboard from "./Pages/Dashboard"
 
 const App = () => {
   return (
@@ -44,7 +46,10 @@ const App = () => {
         
         <Route path="/case-studies/:id" element={<CaseStudyDetail />} />
         <Route path="/upcomingEvents" element={<UpcomingEvents/>}/>
-
+        <Route path="/events/:id" element={<EventDetails />} />
+        <Route path="/admin" element={<Login />} />
+        <Route path="/admin/signup" element={<Signup />} />
+        <Route path="/admin/dashboard" element={<Dashboard />} />
       </Routes>
 
       <Footer></Footer>

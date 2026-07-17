@@ -1,39 +1,43 @@
 
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../utils/api";
 
 export default function Footer() {
   const [logos, setLogos] = useState([]);
 
-  const tableId = "m382v6jmtock4gv";
-  const token = import.meta.env.VITE_NOCODB_ACCESS_TOKEN;
-
   useEffect(() => {
     const fetchLogos = async () => {
       try {
-        const res = await axios.get(
-          `https://app.nocodb.com/api/v2/tables/${tableId}/records?limit=3`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
+        const res = await api.get("/api/clients-logo");
         const list = res?.data?.list || [];
 
         const formatted = list.map((row) => {
           let logo = "";
 
           if (Array.isArray(row?.logoImage) && row.logoImage.length > 0) {
-            logo = row.logoImage[0]?.signedUrl || row.logoImage[0]?.url;
+            const first = row.logoImage[0];
+            logo = typeof first === "string" ? first : (first?.signedUrl || first?.url || "");
           } else if (row?.logoImage?.signedUrl) {
             logo = row.logoImage.signedUrl;
+          } else if (typeof row?.logoImage === "string") {
+            if (row.logoImage.startsWith("[")) {
+              try {
+                const parsed = JSON.parse(row.logoImage);
+                const first = parsed[0];
+                logo = typeof first === "string" ? first : (first?.url || "");
+              } catch {
+                logo = row.logoImage;
+              }
+            } else {
+              logo = row.logoImage;
+            }
           }
 
           return logo;
         });
 
-        setLogos(formatted.filter(Boolean));
+        setLogos(formatted.filter(Boolean).slice(0, 3));
       } catch (err) {
         console.error("Footer logos error:", err);
       }
@@ -61,7 +65,7 @@ export default function Footer() {
         </div>
 
         {/* Middle Section */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
           {/* Logo and Social */}
           <div className="col-span-1 lg:col-span-2">
             <div className="mb-6 text-center lg:text-left">
@@ -90,70 +94,92 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Quick links */}
-          <div className="grid grid-cols-2 gap-10 text-center sm:text-left">
-            <div>
-              <h4 className="text-lg sm:text-xl font-[heading] mb-6">
-                Quick Links
-              </h4>
-              <ul className="space-y-4">
-                <li>
-                  <Link
-                    to="/about"
-                    className="hover:text-gray-400 transition-colors"
-                  >
-                    About Us
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/contact"
-                    className="hover:text-gray-400 transition-colors"
-                  >
-                    Contact Us
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/services"
-                    className="hover:text-gray-400 transition-colors"
-                  >
-                    Services
-                  </Link>
-                </li>
-              </ul>
-            </div>
+          {/* Quick Links Column */}
+          <div className="col-span-1 text-center sm:text-left">
+            <h4 className="text-lg sm:text-xl font-[heading] mb-6">
+              Quick Links
+            </h4>
+            <ul className="space-y-4 font-[textFont] text-gray-400">
+              <li>
+                <Link to="/" className="hover:text-white transition-colors">
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link to="/about" className="hover:text-white transition-colors">
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link to="/services" className="hover:text-white transition-colors">
+                  Services
+                </Link>
+              </li>
+              <li>
+                <Link to="/portfolio" className="hover:text-white transition-colors">
+                  Portfolio
+                </Link>
+              </li>
+            </ul>
+          </div>
 
-            <div>
-              <p className="mb-4 text-gray-400 font-[textFont]">
-                Stay inspired. Follow us here
-              </p>
-              <div className="flex justify-center lg:justify-start space-x-4">
-                <a
-                  href="https://www.instagram.com/omesa_marketing/"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="hover:text-gray-400 transition-colors"
-                >
-                  <i className="fab fa-instagram text-xl"></i>
-                </a>
-                <a
-                  href="https://www.facebook.com/OmesaMarketing"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="hover:text-gray-400 transition-colors"
-                >
-                  <i className="fab fa-facebook text-xl"></i>
-                </a>
-                <a
-                  href="https://www.linkedin.com/company/omesa-marketing-pvt-ltd/"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="hover:text-gray-400 transition-colors"
-                >
-                  <i className="fab fa-linkedin text-xl"></i>
-                </a>
-              </div>
+          {/* Explore Column */}
+          <div className="col-span-1 text-center sm:text-left">
+            <h4 className="text-lg sm:text-xl font-[heading] mb-6">
+              Explore
+            </h4>
+            <ul className="space-y-4 font-[textFont] text-gray-400">
+              <li>
+                <Link to="/caseStudy" className="hover:text-white transition-colors">
+                  Case Studies
+                </Link>
+              </li>
+              <li>
+                <Link to="/upcomingEvents" className="hover:text-white transition-colors">
+                  Upcoming Events
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact" className="hover:text-white transition-colors">
+                  Contact Us
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Social Follow Column (Last Slot) */}
+          <div className="col-span-1 text-center sm:text-left">
+            <h4 className="text-lg sm:text-xl font-[heading] mb-6">
+              Stay Inspired
+            </h4>
+            <p className="mb-4 text-gray-400 font-[textFont]">
+              Stay inspired. Follow us here
+            </p>
+            <div className="flex justify-center sm:justify-start space-x-4">
+              <a
+                href="https://www.instagram.com/omesa_marketing/"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-gray-400 transition-colors"
+              >
+                <i className="fab fa-instagram text-xl"></i>
+              </a>
+              <a
+                href="https://www.facebook.com/OmesaMarketing"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-gray-400 transition-colors"
+              >
+                <i className="fab fa-facebook text-xl"></i>
+              </a>
+              <a
+                href="https://www.linkedin.com/company/omesa-marketing-pvt-ltd/"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-gray-400 transition-colors"
+              >
+                <i className="fab fa-linkedin text-xl"></i>
+              </a>
             </div>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import emailjs from "@emailjs/browser";
+import api from "../utils/api";
 
 function ContactForm() {
 
@@ -55,7 +56,6 @@ function ContactForm() {
     setFormData((prev) => ({ ...prev, [field]: value }));
     setErrors((prev) => ({ ...prev, [field]: false }));
   };
-
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -74,14 +74,14 @@ function ContactForm() {
 
       subject: !formData.subject.trim(),
 
-      comments: formData.comments.trim().length < 5,
+      comments: formData.comments.trim() !== "" && formData.comments.trim().length < 5,
     };
 
     setErrors(newErrors);
 
     if (!Object.values(newErrors).some((error) => error)) {
-
       const templateParams = {
+        to_email: "info@omesa.in",
         from_name: formData.firstName,
         from_email: formData.email,
         phone: formData.phoneNumber,
@@ -89,31 +89,50 @@ function ContactForm() {
         comments: formData.comments,
       };
 
-      emailjs.send(
-        "service_slptbe9",
-        "template_0iwhh2m",
-        templateParams,
-        "AVDJ6-gG1yfcH_At0"
-      )
+      // Save contact inquiry locally
+      api.post("/api/contact-inquiries", {
+        name: formData.firstName,
+        email: formData.email,
+        subject: formData.subject,
+        message: `Phone: ${formData.phoneNumber || "N/A"}\n\n${formData.comments}`
+      })
       .then(() => {
-
-        alert("Message sent successfully!");
-
-        setFormData({
-          firstName: "",
-          email: "",
-          phoneNumber: "",
-          subject: "",
-          comments: "",
+        // Trigger EmailJS sending in parallel
+        emailjs.send(
+          "service_slptbe9",
+          "template_0iwhh2m",
+          templateParams,
+          "AVDJ6-gG1yfcH_At0"
+        ).catch((err) => {
+          console.error("EmailJS sending failed:", err);
         });
 
+        // Show proper message & refresh the page
+        alert("Thank you! Your message has been sent successfully.");
+        window.location.reload();
       })
-      .catch((error) => {
-        console.error("Email error:", error);
+      .catch((err) => {
+        console.error("Local database inquiry save error:", err);
+        
+        // Fallback to attempt EmailJS even if local db save failed
+        emailjs.send(
+          "service_slptbe9",
+          "template_0iwhh2m",
+          templateParams,
+          "AVDJ6-gG1yfcH_At0"
+        )
+        .then(() => {
+          alert("Thank you! Your message has been sent successfully.");
+          window.location.reload();
+        })
+        .catch((emailErr) => {
+          console.error("Email error:", emailErr);
+          alert("Failed to send message. Please try again later.");
+        })
+
       });
     }
   };
-
   return (
     <>
       <div className="bg-slate-950 contact-form flex justify-center items-center">
@@ -132,9 +151,45 @@ function ContactForm() {
                   Start a Conversation
                 </h2>
 
-                <p className="text-blue-100 font-[textFont]">
+                <p className="text-blue-100 font-[textFont] mb-8">
                   Ready to build something great? From partnerships to complex solutions, our team is here to help.
                 </p>
+
+                <div className="space-y-6 border-t border-blue-500/30 pt-6">
+                  {/* Address */}
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-full bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-white shrink-0 mt-1">
+                      <i className="fas fa-map-marker-alt text-lg"></i>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-[heading] text-blue-200 uppercase tracking-wider font-semibold">Address</h4>
+                      <a 
+                        href="https://www.google.com/maps/dir//Nehru+Enclave+Chittaranjan+Park+New+Delhi,+Delhi" 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-white font-[textFont] text-fs-16 leading-normal mt-1 block hover:text-blue-200 transition-colors"
+                      >
+                        Nehru Enclave Chittaranjan Park, New Delhi, Delhi
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Phone */}
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-full bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-white shrink-0 mt-1">
+                      <i className="fas fa-phone text-lg"></i>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-[heading] text-blue-200 uppercase tracking-wider font-semibold">Phone</h4>
+                      <a 
+                        href="tel:+919810186798" 
+                        className="text-white font-[textFont] text-fs-16 leading-normal mt-1 block hover:text-blue-200 transition-colors"
+                      >
+                        +91 98101 86798
+                      </a>
+                    </div>
+                  </div>
+                </div>
 
               </div>
 
@@ -230,6 +285,23 @@ function ContactForm() {
 
         </div>
 
+      </div>
+
+      {/* Google Map Section */}
+      <div className="w-full bg-slate-950 pb-16 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-36">
+        <div className="max-w-6xl mx-auto rounded-2xl overflow-hidden border border-slate-800 shadow-2xl bg-black">
+          <iframe 
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3505.5167527632616!2d77.25141247631375!3d28.539268688463945!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390ce3c4d7ec6eeb%3A0xe544c776c5b05a7e!2sNehru%20Enclave%20%2C%20Kalkaji%2C%20Chittaranjan%20Park%2C%20New%20Delhi%2C%20Delhi%20110019!5e0!3m2!1sen!2sin!4v1716164289874!5m2!1sen!2sin" 
+            width="100%" 
+            height="450" 
+            style={{ border: 0 }} 
+            allowFullScreen="" 
+            loading="lazy" 
+            referrerPolicy="no-referrer-when-downgrade"
+            className="filter invert-[90%] hue-rotate-180 opacity-80 hover:opacity-100 transition-all duration-500"
+            title="Google Map Location"
+          ></iframe>
+        </div>
       </div>
     </>
   );

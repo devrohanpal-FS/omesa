@@ -22,7 +22,7 @@ const Home = () => {
 
         {/* All other sections scroll over the banner */}
 
-        <AboutSection />
+        <AboutSection isPreview={true} />
         <WhatsAppChat></WhatsAppChat>
 
         <div className="videoBanner">

@@ -24,3 +24,15 @@ dist/
 *.njsproj
 *.sln
 *.sw?
+
+# Database
+prisma/dev.db
+prisma/dev.db-journal
+
+# Uploads
+uploads/
+
+# Production builds / zip
+dist.zip
+omesa_production.zip
+dist 2/

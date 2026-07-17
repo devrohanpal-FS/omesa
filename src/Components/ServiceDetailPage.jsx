@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import axios from "axios";
+import api from "../utils/api";
 import emailjs from "@emailjs/browser";
 
 /* ---------- slug helper ---------- */
 
 const SERVICE_TAB_MAP = {
+  // Numeric IDs
   1: "Advertising & Brand Consulting",
   2: "Exhibition Design & Turnkey Solutions",
   3: "Events, Conferences & Hospitality",
@@ -13,6 +14,15 @@ const SERVICE_TAB_MAP = {
   5: "Digital & Media Production",
   6: "Interactive Exhibits & Displays",
   7: "Omesa Arts",
+
+  // Text Slugs
+  "advertising-and-brand-consulting": "Advertising & Brand Consulting",
+  "exhibition-design-and-turnkey-solutions": "Exhibition Design & Turnkey Solutions",
+  "events-conferences-and-hospitality": "Events, Conferences & Hospitality",
+  "murals-and-installations": "Murals & Installations",
+  "digital-and-media-production": "Digital & Media Production",
+  "interactive-exhibits-and-displays": "Interactive Exhibits & Displays",
+  "omesa-arts": "Omesa Arts",
 };
 
 const toSlug = (text) =>
@@ -26,8 +36,6 @@ const ServiceDetailPage = () => {
 
   const { id } = useParams();
   const [service, setService] = useState(null);
-
-  const token = import.meta.env.VITE_NOCODB_ACCESS_TOKEN;
 
   /* ---------- inquiry form ---------- */
 
@@ -68,11 +76,22 @@ const ServiceDetailPage = () => {
     if (!Object.values(newErrors).some((error) => error)) {
 
       const templateParams = {
+        to_email: "info@omesa.in",
         from_name: inquiry.name,
         from_email: inquiry.email,
         subject: inquiry.subject,
         message: inquiry.message,
       };
+
+      // Save contact inquiry locally
+      api.post("/api/contact-inquiries", {
+        name: inquiry.name,
+        email: inquiry.email,
+        subject: `Service Inquiry: ${inquiry.subject}`,
+        message: inquiry.message
+      }).catch((err) => {
+        console.error("Local database inquiry save error:", err);
+      });
 
       emailjs.send(
         "service_slptbe9",
@@ -80,45 +99,30 @@ const ServiceDetailPage = () => {
         templateParams,
         "AVDJ6-gG1yfcH_At0"
       )
-      .then(() => {
+        .then(() => {
 
-        alert("Inquiry sent successfully!");
+          alert("Inquiry sent successfully!");
 
-        setInquiry({
-          name: "",
-          email: "",
-          subject: "",
-          message: "",
+          setInquiry({
+            name: "",
+            email: "",
+            subject: "",
+            message: "",
+          });
+
+        })
+        .catch((error) => {
+          console.error("Email error:", error);
         });
-
-      })
-      .catch((error) => {
-        console.error("Email error:", error);
-      });
     }
-  };
-
-  /* ---------- stable image url ---------- */
-
-  const getImageUrl = (recordId, column = "image") => {
-    return `https://app.nocodb.com/api/v2/tables/m97nb4rvj291dg7/records/${recordId}/download/${column}?access_token=${token}`;
   };
 
   /* ---------- fetch service ---------- */
 
   useEffect(() => {
-
     const fetchService = async () => {
-
       try {
-
-        const res = await axios.get(
-          `https://app.nocodb.com/api/v2/tables/m97nb4rvj291dg7/records/${id}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
+        const res = await api.get(`/api/services/${id}`);
         const item = res.data;
 
         setService({
@@ -128,18 +132,16 @@ const ServiceDetailPage = () => {
           description: item.description,
           longDesc: item.Long_Description,
           related: item.Related_services,
-          image: item.image ? getImageUrl(item.Id, "image") : null,
+          image: item.image,
+          images: item.images || [],
         });
-
       } catch (error) {
         console.error("Error fetching service:", error);
       }
-
     };
 
     fetchService();
-
-  }, [id, token]);
+  }, [id]);
 
   if (!service) {
     return <div className="text-white p-10">Loading service details...</div>;
@@ -147,11 +149,11 @@ const ServiceDetailPage = () => {
 
   return (
 
-    <div className="h-full w-full bg-[#010616]">
+    <div className="h-full pt-32 w-full bg-[#010616]">
 
       {/* HEADER */}
 
-      <div className="h-60 bg-gradient-to-r from-[#03051E] via-[#0e1f4b] to-[#1D53B7]" />
+      <div className=" bg-gradient-to-r from-[#03051E] via-[#0e1f4b] to-[#1D53B7]" />
 
       <div className="container mx-auto px-4 py-10">
 
@@ -161,14 +163,37 @@ const ServiceDetailPage = () => {
 
           <div className="lg:col-span-2 space-y-8">
 
-            <img
-              src={
-                service.image ||
-                "https://kit.wof-pack.com/sirion/wp-content/uploads/sites/6/2025/02/developers-searching-for-bugs-1024x682.jpg"
-              }
-              alt={service.title}
-              className="w-full h-[400px] object-cover rounded-lg"
-            />
+            <div className="space-y-6">
+              <div className="rounded-lg overflow-hidden border border-slate-800 bg-black">
+                <img
+                  src={
+                    service.image ||
+                    "https://kit.wof-pack.com/sirion/wp-content/uploads/sites/6/2025/02/developers-searching-for-bugs-1024x682.jpg"
+                  }
+                  alt={service.title}
+                  className="w-full h-[400px] object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = "https://kit.wof-pack.com/sirion/wp-content/uploads/sites/6/2025/02/developers-searching-for-bugs-1024x682.jpg";
+                  }}
+                />
+              </div>
+
+              {service.images && service.images.length > 1 && (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {service.images.slice(1).map((img, idx) => (
+                    <div key={idx} className="rounded-lg overflow-hidden border border-slate-800 bg-black aspect-video hover:scale-[1.02] transition-transform duration-300">
+                      <img
+                        src={img}
+                        alt={`${service.title} ${idx + 2}`}
+                        className="w-full h-full object-cover cursor-pointer"
+                        onClick={() => window.open(img, "_blank")}
+                        onError={(e) => { e.currentTarget.style.display = "none"; }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
             <div className="space-y-4">
 
@@ -182,12 +207,11 @@ const ServiceDetailPage = () => {
 
             </div>
 
-            <Link
-              to={`/portfolio${
-                SERVICE_TAB_MAP[id]
-                  ? `?tab=${encodeURIComponent(SERVICE_TAB_MAP[id])}`
-                  : ""
-              }`}
+            <Link className="pt-10"
+              to={`/portfolio${SERVICE_TAB_MAP[id]
+                ? `?tab=${encodeURIComponent(SERVICE_TAB_MAP[id])}`
+                : ""
+                }`}
             >
               <button className="bg-white rounded-full py-2 px-7 border-2 font-[textFont] border-gray-300 text-gray-950 hover:bg-transparent hover:text-white transition">
                 Portfolio
@@ -254,20 +278,18 @@ const ServiceDetailPage = () => {
                     <input
                       placeholder="Your Name"
                       value={inquiry.name}
-                      onChange={(e)=>handleInquiryChange("name",e.target.value)}
-                      className={`bg-slate-800 border ${
-                        errors.name ? "border-red-500":"border-slate-700"
-                      } text-white p-2 rounded`}
+                      onChange={(e) => handleInquiryChange("name", e.target.value)}
+                      className={`bg-slate-800 border ${errors.name ? "border-red-500" : "border-slate-700"
+                        } text-white p-2 rounded`}
                     />
 
                     <input
                       type="email"
                       placeholder="Your Email"
                       value={inquiry.email}
-                      onChange={(e)=>handleInquiryChange("email",e.target.value)}
-                      className={`bg-slate-800 border ${
-                        errors.email ? "border-red-500":"border-slate-700"
-                      } text-white p-2 rounded`}
+                      onChange={(e) => handleInquiryChange("email", e.target.value)}
+                      className={`bg-slate-800 border ${errors.email ? "border-red-500" : "border-slate-700"
+                        } text-white p-2 rounded`}
                     />
 
                   </div>
@@ -275,20 +297,18 @@ const ServiceDetailPage = () => {
                   <input
                     placeholder="Subject"
                     value={inquiry.subject}
-                    onChange={(e)=>handleInquiryChange("subject",e.target.value)}
-                    className={`bg-slate-800 border ${
-                      errors.subject ? "border-red-500":"border-slate-700"
-                    } text-white p-2 rounded w-full`}
+                    onChange={(e) => handleInquiryChange("subject", e.target.value)}
+                    className={`bg-slate-800 border ${errors.subject ? "border-red-500" : "border-slate-700"
+                      } text-white p-2 rounded w-full`}
                   />
 
                   <textarea
                     rows={4}
                     placeholder="Your Message"
                     value={inquiry.message}
-                    onChange={(e)=>handleInquiryChange("message",e.target.value)}
-                    className={`bg-slate-800 border ${
-                      errors.message ? "border-red-500":"border-slate-700"
-                    } text-white p-2 rounded w-full`}
+                    onChange={(e) => handleInquiryChange("message", e.target.value)}
+                    className={`bg-slate-800 border ${errors.message ? "border-red-500" : "border-slate-700"
+                      } text-white p-2 rounded w-full`}
                   />
 
                   <button

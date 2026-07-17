@@ -2,79 +2,17 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import axios from "axios";
+import api from "../utils/api";
 
 export default function RecentProjects({ limit }) {
   const [projects, setProjects] = useState([]);
   const visibleProjects = limit ? projects.slice(0, limit) : projects;
-  // env / constants
-  const NOCODB_TOKEN = import.meta.env.VITE_NOCODB_ACCESS_TOKEN; // will be used as xc-token
-  const TABLE_ID = "mebdphs2dx4f1m3"; // keep as-is or move to env
-  const API_BASE = import.meta.env.VITE_NOCODB_API_BASE || "https://app.nocodb.com/api/v2";
-
-  // optional: viewId from your earlier test (replace if needed)
-  const VIEW_ID = "vwob5yjkd7yexr3m";
-  const LIMIT = 100;
-
-  // Helper: extract only signed URL (top-level -> thumbnails.card_cover -> thumbnails.small -> thumbnails.tiny)
-  const imageSrcFor = (attachment) => {
-    if (!attachment || typeof attachment !== "object") return null;
-
-    const topSigned = attachment.signedUrl || attachment.signed_url || attachment.signedURL || null;
-    if (topSigned) return topSigned;
-
-    const thumbs = attachment.thumbnails || attachment.Thumbnails || null;
-    if (thumbs) {
-      return (
-        thumbs.card_cover?.signedUrl ||
-        thumbs.card_cover?.signed_url ||
-        thumbs.small?.signedUrl ||
-        thumbs.small?.signed_url ||
-        thumbs.tiny?.signedUrl ||
-        thumbs.tiny?.signed_url ||
-        null
-      );
-    }
-
-    return null;
-  };
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!NOCODB_TOKEN || !TABLE_ID) {
-        console.error(
-          "⚠️ Missing NocoDB config. Set VITE_NOCODB_ACCESS_TOKEN and (optionally) VITE_NOCODB_TABLE_ID in .env"
-        );
-        return;
-      }
-
-      const url = `${API_BASE}/tables/${TABLE_ID}/records`;
-
-      const options = {
-        method: "GET",
-        url,
-        params: {
-          offset: "0",
-          limit: String(LIMIT),
-          where: "",
-          viewId: VIEW_ID,
-        },
-        headers: {
-          "xc-token": NOCODB_TOKEN,
-          "Content-Type": "application/json",
-        },
-      };
-
       try {
-        const res = await axios.request(options);
-
-        console.log("🔍 Raw NocoDB response:", res.data);
-
-        const list = res?.data?.list;
-        if (!list || !Array.isArray(list)) {
-          console.error("⚠️ 'list' missing or not an array:", res.data);
-          return;
-        }
+        const res = await api.get("/api/portfolio-tiles");
+        const list = res.data?.list || [];
 
         const formatted = list.map((row) => {
           const title = row?.Title || row?.title || row?.name || "Untitled";
@@ -82,29 +20,32 @@ export default function RecentProjects({ limit }) {
           const description = row?.LongDescription || row?.description || row?.Description || row?.desc || "";
           const dateField = row?.date || row?.Date || null;
 
-          // Where attachments may be: images, Images, attachments...
-          const candidates =
-            row?.images || row?.Images || row?.image || row?.Image || row?.attachments || row?.Attachments || null;
+           let Images = [];
+          const candidates = row?.images || row?.Images || row?.image || row?.Image || null;
 
-          let Images = [];
           if (Array.isArray(candidates) && candidates.length > 0) {
             Images = candidates
               .map((att) => {
-                const signed = imageSrcFor(att);
-                if (!signed) return null; // IGNORE attachments without signedUrl
-                return { url: signed, raw: att };
+                const url = typeof att === "string" ? att : (att?.signedUrl || att?.signed_url || att?.url || null);
+                return url ? { url, raw: att } : null;
               })
               .filter(Boolean);
           } else if (candidates && typeof candidates === "object") {
-            const signed = imageSrcFor(candidates);
-            if (signed) Images = [{ url: signed, raw: candidates }];
-          }
-
-          // LOG signedUrls for debugging
-          if (Images.length > 0) {
-            console.log(`Record ${row?.Id || row?.id} signed image urls:`, Images.map((i) => i.url));
-          } else {
-            console.log(`Record ${row?.Id || row?.id} → no signed image found`);
+            const url = candidates.signedUrl || candidates.signed_url || candidates.url || null;
+            if (url) Images = [{ url, raw: candidates }];
+          } else if (typeof candidates === "string") {
+            if (candidates.startsWith("[")) {
+              try {
+                const parsed = JSON.parse(candidates);
+                if (Array.isArray(parsed)) {
+                  Images = parsed.map(x => ({ url: typeof x === "string" ? x : (x?.url || ""), raw: x })).filter(x => x.url);
+                }
+              } catch {
+                Images = [{ url: candidates, raw: candidates }];
+              }
+            } else {
+              Images = [{ url: candidates, raw: candidates }];
+            }
           }
 
           return {
@@ -114,6 +55,7 @@ export default function RecentProjects({ limit }) {
             description,
             date: dateField,
             Images,
+            thumbnail: row?.thumbnail || null,
             raw: row,
           };
         });
@@ -128,12 +70,12 @@ export default function RecentProjects({ limit }) {
         setProjects(sorted);
         console.log("✨ Formatted & sorted projects:", sorted);
       } catch (error) {
-        console.error("❌ Failed to fetch NocoDB records:", error);
+        console.error("❌ Failed to fetch local records:", error);
       }
     };
 
     fetchData();
-  }, [NOCODB_TOKEN, TABLE_ID, API_BASE]);
+  }, []);
 
   // AOS Init
   useEffect(() => {
@@ -201,11 +143,10 @@ export function ProjectCard({ project, index }) {
   const [isHovered, setIsHovered] = useState(false);
   const isOffset = index % 2 === 0;
 
-  const offsetClass = isOffset ? "mt-12 lg:mt-10" : "";
+  const offsetClass = isOffset ? "lg:mt-16" : "";
 
-  const { title, category, description, Images } = project;
-  const firstImage = Images?.[0];
-  const imageUrl = firstImage?.url || "/placeholder.svg";
+  const { title, category, description, Images, thumbnail } = project;
+  const imageUrl = thumbnail || Images?.[0]?.url || "/placeholder.svg";
 
   return (
     <div

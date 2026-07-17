@@ -77,14 +77,14 @@ export default function TrustedClients() {
       image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1170&auto=format&fit=crop",
     },
   ];
-  
+
 
   return (
     <div className="bg-[#010616] p-4 sm:p-6 lg:p-8 flex flex-col lg:flex-row items-stretch gap-6">
       {/* Left Card */}
       <div
         className="w-full lg:w-[55vw] relative lg:right-10 overflow-hidden rounded-xl p-6 sm:p-8 lg:p-12 lg:p-24"
-        style={{ backgroundImage: "url('/backgroundImages/blue.jpg')", backgroundSize: "contain", backgroundRepeat:"no-repeat"}}
+        style={{ backgroundImage: "url('/backgroundImages/blue.jpg')", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}
       >
         {/* Badge */}
         <div className="inline-flex items-center px-4 py-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-sm mb-6 sm:mb-8">
@@ -93,12 +93,12 @@ export default function TrustedClients() {
           </span>
         </div>
 
-        {/* Main Content */}
+         {/* Main Content */}
         <div className="space-y-4 sm:space-y-6">
           <h2 className="text-3xl sm:text-4xl lg:text-fs-58 font-semibold font-[HeadingFont] text-white leading-tight">
             Trusted by the industry leaders.
           </h2>
-          <p className="text-blue-100 font-[TextFont] text-fs-16 font-light sm:text-lg leading-relaxed max-w-md">
+          <p className="text-blue-100 font-[textFont] text-fs-16 font-light sm:text-lg leading-relaxed max-w-md">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit
             tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.
           </p>

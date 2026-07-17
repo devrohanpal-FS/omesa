@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import api from "../utils/api";
 
 /* ================= IMAGE MODAL ================= */
 const ImageModal = ({ image, onClose }) => {
@@ -29,49 +29,38 @@ export default function CaseStudies() {
   const [caseStudies, setCaseStudies] = useState([]);
   const [previewImage, setPreviewImage] = useState(null);
 
-  const token = import.meta.env.VITE_NOCODB_ACCESS_TOKEN;
-
-  /* ---------- helper: signed url ---------- */
-  const signedUrlFor = (att) => {
-    if (!att || typeof att !== "object") return null;
-
-    return (
-      att.signedUrl ||
-      att.signed_url ||
-      att.thumbnails?.card_cover?.signedUrl ||
-      att.thumbnails?.small?.signedUrl ||
-      att.thumbnails?.tiny?.signedUrl ||
-      null
-    );
-  };
-
   /* ---------- fetch data ---------- */
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get(
-          "https://app.nocodb.com/api/v2/tables/mnw2o8jh7xtlid3/records",
-          {
-            headers: {
-              "xc-token": token,
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
+        const res = await api.get("/api/case-studies");
         const list = res.data?.list || [];
 
         const formatted = list.map((item) => {
-          const rawImages = item.image || item.images || [];
+          let imageUrl = null;
+          if (Array.isArray(item.image) && item.image.length > 0) {
+            const first = item.image[0];
+            imageUrl = typeof first === "string" ? first : (first.signedUrl || first.url || null);
+          } else if (item.image && typeof item.image === "object") {
+            imageUrl = item.image.signedUrl || item.image.url || null;
+          } else if (typeof item.image === "string") {
+            if (item.image.startsWith("[")) {
+              try {
+                const parsed = JSON.parse(item.image);
+                imageUrl = typeof parsed[0] === "string" ? parsed[0] : (parsed[0]?.url || null);
+              } catch {
+                imageUrl = item.image;
+              }
+            } else {
+              imageUrl = item.image;
+            }
+          }
 
           return {
             id: item.Id,
             title: item.Title,
             shortDesc: item.shortDesc,
-            image:
-              Array.isArray(rawImages) && rawImages.length > 0
-                ? signedUrlFor(rawImages[0])
-                : null,
+            image: imageUrl,
           };
         });
 
@@ -81,21 +70,31 @@ export default function CaseStudies() {
       }
     };
 
-    if (token) fetchData();
-  }, [token]);
+    fetchData();
+  }, []);
 
   return (
-    <section className="bg-[#010616] min-h-screen pt-32 pb-32 mt-32">
+    <section className="bg-[#010616] min-h-screen pt-20 pb-32 mt-32">
       <div className="max-w-6xl mx-auto px-4">
+
+        {/* Page Header */}
+        <div className="mb-16">
+          {/* <span className="inline-block border border-gray-600 text-gray-300 mb-6 px-4 py-2 text-sm font-normal rounded-full">
+            CASE STUDIES
+          </span> */}
+          <h2 className="text-4xl sm:text-5xl lg:text-fs-54 font-[heading] leading-tight bg-gradient-to-r from-gray-500 via-neutral-300 to-slate-200 bg-clip-text text-transparent">
+            Case Studies
+          </h2>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
           {caseStudies.map((study, index) => (
             <div
               key={study.id}
-              className={`group cursor-pointer ${
-                index % 2 === 0
-                 ? "mt-12 lg:mt-1"
-                          : "mt-0 lg:-mt-16"
-              }`}
+              className={`group cursor-pointer ${index % 2 === 0
+                ? "mt-8 lg:mt-12"
+                : "mt-8 lg:-mt-16"
+                }`}
             >
               {/* IMAGE CARD */}
               <div className="relative rounded-2xl overflow-hidden">

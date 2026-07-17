@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useMediaQuery } from "../Hooks/useMediaQuery";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import api from "../utils/api";
 
 function ServicesSection() {
   const [services, setServices] = useState([]);
@@ -9,20 +9,10 @@ function ServicesSection() {
   const videoRefs = useRef({});
   const isSmallScreen = useMediaQuery("(max-width: 368px)");
 
- 
-  const token = import.meta.env.VITE_NOCODB_ACCESS_TOKEN;
- 
-
   useEffect(() => {
     const fetchData = async () => {
-      const url = `https://app.nocodb.com/api/v2/tables/m97nb4rvj291dg7/records`;
-
       try {
-        const res = await axios.get(url, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await api.get("/api/services");
 
         console.log("🔥 Services API Response:", res.data);
 
@@ -48,7 +38,7 @@ function ServicesSection() {
     };
 
     fetchData();
-  }, [token]);
+  }, []);
 
   // ✅ Initialize videoRefs
   useEffect(() => {

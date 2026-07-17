@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../utils/api";
 
 // 🔒 STATIC words (unchanged)
 const words = [
@@ -24,20 +24,11 @@ const HomeBanner = ({ scrollY }) => {
   // scroll animation
   const parallaxOffset = scrollY * 0.1;
 
-  const token = import.meta.env.VITE_NOCODB_ACCESS_TOKEN;
-
-  // 🔹 NocoDB fetch (AboutSection jaisa)
+  // 🔹 Local API fetch
   useEffect(() => {
     const fetchData = async () => {
-      const url =
-        "https://app.nocodb.com/api/v2/tables/mlq2e021k2qi7a7/records";
-
       try {
-        const res = await axios.get(url, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await api.get("/api/banner");
 
         console.log("Banner API Response:", res.data.list);
 
@@ -50,7 +41,7 @@ const HomeBanner = ({ scrollY }) => {
     };
 
     fetchData();
-  }, [token]);
+  }, []);
 
   // Word cycling effect (UNCHANGED)
   useEffect(() => {

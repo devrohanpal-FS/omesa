@@ -1,46 +1,31 @@
 // src/components/AboutSection.jsx
 import { useState, useEffect, useRef } from "react";
-import axios from "axios";
+import api from "../utils/api";
 import { StatItem } from "./StateItems";
+import { Link } from "react-router-dom";
 
-export default function AboutSection() {
+export default function AboutSection({ isPreview = false }) {
   const [shouldAnimateStats, setShouldAnimateStats] = useState(false);
   const statsRef = useRef(null);
   const [Data, setData] = useState({});
 
-  // env vars (NocoDB ke liye set karo)
-  const token = import.meta.env.VITE_NOCODB_ACCESS_TOKEN;
-  
-
   useEffect(() => {
     const fetchData = async () => {
-      const url = `https://app.nocodb.com/api/v2/tables/mhfs6tkzwqmi3jk/records`;
-
       try {
-        const res = await axios.get(url, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await api.get("/api/about-us");
 
-        // ✅ Response ko console par print karo
+        console.log("Local API Response:", res.data.list);
 
-        console.log("NocoDB API Response:", res.data.list);
-        // const dataFinalAbout = res.data.list;
-        // console.log(dataFinalAbout);
-
-        // Agar list exist karti hai to pehli row ko state me set karo
         if (res.data.list && res.data.list.length > 0) {
           setData(res.data.list[0]);
-
         }
       } catch (error) {
-        console.error("Error fetching from NocoDB:", error);
+        console.error("Error fetching from local backend:", error);
       }
     };
 
     fetchData();
-  }, [token]);
+  }, []);
 
   // animation useEffect
   useEffect(() => {
@@ -82,8 +67,25 @@ export default function AboutSection() {
               <h2 className="text-2xl sm:text-3xl lg:text-fs-58 font-[heading] font-semibold leading-normal mb-6 bg-gradient-to-r from-gray-500 via-neutral-400 to-slate-300 bg-clip-text text-transparent">
                 {Data?.Heding}
               </h2>
-              <div className="text-gray-400 text-lg lg:text-lg sm:text-base md:text-lg leading-relaxed max-w-3xl mb-6 mx-auto md:mx-0 font-[textFont] ">
-                {Data?.Description}
+              <div className="text-gray-400 text-lg lg:text-lg sm:text-base md:text-lg leading-relaxed max-w-3xl mb-6 mx-auto md:mx-0 font-[textFont]">
+                {isPreview ? (
+                  <div>
+                    <p>{(() => {
+                      if (!Data?.Description) return "";
+                      const stripped = Data.Description.replace(/<[^>]*>/g, " ");
+                      if (stripped.length <= 220) return stripped;
+                      return stripped.slice(0, 220).trim() + "...";
+                    })()}</p>
+                    <Link
+                      to="/about"
+                      className="inline-block mt-4 text-blue-500 hover:text-blue-400 font-semibold transition"
+                    >
+                      Read More →
+                    </Link>
+                  </div>
+                ) : (
+                  <div dangerouslySetInnerHTML={{ __html: Data?.Description }} />
+                )}
               </div>
             </div>
           </div>

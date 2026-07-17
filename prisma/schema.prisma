@@ -1,0 +1,140 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AboutUs {
+  id           Int      @id @default(autoincrement())
+  Heding       String
+  Description  String
+  CTA          String?
+  experience   Int
+  project      Int
+  satisfaction Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model ClientsLogo {
+  id        Int      @id @default(autoincrement())
+  logoname  String
+  logoImage String   // Stores image path or JSON string e.g. [{"url": "/images/logo.png"}]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PortfolioTiles {
+  id              Int      @id @default(autoincrement())
+  Title           String
+  description     String
+  images          String   // JSON string representing images, e.g. [{"url": "/images/..."}]
+  category        String
+  longdescription String
+  date            String?  // e.g. "2025-07-16"
+  thumbnail       String?
+  videoUrl        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Services {
+  id               Int      @id @default(autoincrement())
+  Number           String
+  title            String
+  description      String
+  Long_Description String
+  OneLiner         String
+  Related_services String?
+  Attachments      String   // JSON string of attachments
+  Date             String?  // e.g. "08/09/2025"
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model CaseStudy {
+  id              Int      @id @default(autoincrement())
+  Title           String
+  description     String
+  shortDesc       String
+  LongDescription String
+  desc1           String?
+  desc2           String?
+  desc3           String?
+  desc4           String?
+  desc5           String?
+  desc6           String?
+  image           String?  // image URL or JSON string
+  deliverables    String?  // JSON string e.g. [{"icon": "...", "title": "...", "description": "..."}]
+  bulletPoints    String?  // JSON string array e.g. ["Highlight 1", ...]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model UpcomingEvents {
+  id          Int      @id @default(autoincrement())
+  Title       String
+  description String
+  Date        String?  // e.g. "2025-09-02"
+  Address     String
+  image       String?  // image URL or JSON string
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Banner {
+  id             Int      @id @default(autoincrement())
+  Title          String
+  heading_line_2 String
+  desc           String
+  video_url      String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Testimonial {
+  id               Int      @id @default(autoincrement())
+  quote            String
+  author           String
+  position         String
+  company          String
+  trustBadge       String
+  trustTitle       String
+  trustDescription String
+  reviewCount      String
+  reviewLabel      String
+  avatars          String   // JSON string of avatar urls
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model ContactInquiry {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  subject   String
+  message   String
+  createdAt DateTime @default(now())
+}
+
+model TeamMember {
+  id           Int      @id @default(autoincrement())
+  name         String
+  designation  String
+  image        String
+  displayOrder Int?     @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
