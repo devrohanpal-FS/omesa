@@ -9,7 +9,8 @@
     "server": "node server.js",
     "build": "vite build",
     "lint": "eslint src server.js",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
