@@ -13,14 +13,14 @@ async function main() {
   });
 
   if (!existingUser) {
-    const hashedPassword = await bcrypt.hash("AdminPassword123", 10);
+    const hashedPassword = await bcrypt.hash("Admin@Omesa2026-", 10);
     await prisma.user.create({
       data: {
         email: adminEmail,
         password: hashedPassword,
       },
     });
-    console.log("✅ Admin user created: admin@omesa.in / AdminPassword123");
+    console.log("✅ Admin user created: admin@omesa.in / Admin@Omesa2026-");
   }
 
   // 2. Seed AboutUs

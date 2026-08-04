@@ -11,7 +11,7 @@ This guide provides step-by-step instructions for administrators to add, edit, a
    - **Production URL**: `https://omesa.in/admin` (or your staging domain)
 2. Enter the administrator credentials:
    - **Email Address**: `admin@omesa.in`
-   - **Password**: `AdminPassword123`
+   - **Password**: `Admin@Omesa2026-`
 3. Click **Sign In**. Upon successful authentication, you will be redirected to the **Admin Dashboard** (`/admin/dashboard`).
 
 ---
