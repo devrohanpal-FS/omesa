@@ -307,57 +307,33 @@ const Portfolio = () => {
       <div className="h-48 sm:h-56 md:h-64 lg:h-72 xl:h-28 w-full bg-gradient-to-r from-[#03051E] via-[#0e1f4b] to-[#1D53B7]"></div>
 
       <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 lg:px-8 py-8">
+        {/* ================= TABS ON TOP WITHOUT SLIDER ================= */}
+        <nav className="flex flex-wrap items-center gap-4 mb-10 mt-7 justify-start">
+          {categories.map((category) => (
+            <button
+              key={category}
+              onClick={() => {
+                setActiveTab(category);
 
-        {/* ================= TABS SLIDER WITH CUSTOM ARROWS ================= */}
-        <nav className="relative mb-8 mt-7">
-
-          {/* 👉 WHITE BOX ARROWS */}
-          <div className="absolute right-0 top-12 flex gap-3 z-10">
-            <button className="tab-prev w-10 h-10 bg-white rounded flex items-center justify-center">
-              ◀
+                if (category === "All") {
+                  setSearchParams({});
+                } else {
+                  setSearchParams({ tab: category });
+                }
+              }}
+              className={`px-5 py-3 rounded-xl font-[textFont] text-fs-16 font-semibold transition-all duration-300 border ${
+                activeTab === category
+                  ? "bg-blue-600/10 text-blue-500 border-blue-500/20 shadow-[0_4px_20px_rgba(37,99,235,0.08)]"
+                  : "text-slate-400 border-transparent hover:border-slate-800 hover:bg-slate-900/30 hover:text-white"
+              }`}
+            >
+              {category}
             </button>
-
-            <button className="tab-next w-10 h-10 bg-white rounded flex items-center justify-center">
-              ▶
-            </button>
-          </div>
-
-          <Swiper
-            modules={[Navigation]}
-            navigation={{
-              prevEl: ".tab-prev",
-              nextEl: ".tab-next",
-            }}
-            spaceBetween={10}
-            slidesPerView={"auto"}
-            className="!px-2"
-          >
-            {categories.map((category) => (
-              <SwiperSlide key={category} style={{ width: "auto" }}>
-                <button
-                  onClick={() => {
-                    setActiveTab(category);
-
-                    if (category === "All") {
-                      setSearchParams({});
-                    } else {
-                      setSearchParams({ tab: category });
-                    }
-                  }}
-                  className={`px-4 py-2 rounded font-[textFont] text-fs-18 font-semibold  transition-colors whitespace-nowrap ${activeTab === category
-                      ? "text-blue-600"
-                      : "text-slate-300"
-                    }`}
-                >
-                  {category}
-                </button>
-              </SwiperSlide>
-            ))}
-          </Swiper>
+          ))}
         </nav>
 
         {/* ================= PORTFOLIO GRID ================= */}
-        <div className="mt-24 columns-1 sm:columns-2 lg:columns-3 gap-6 mb-10">
+        <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 mb-10">
           {filteredProjects.map((project) => {
             const imageUrl =
               project.thumbnail ||

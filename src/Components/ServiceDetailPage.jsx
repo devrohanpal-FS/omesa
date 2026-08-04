@@ -207,17 +207,18 @@ const ServiceDetailPage = () => {
 
             </div>
 
-            <Link className="pt-10"
-              to={`/portfolio${SERVICE_TAB_MAP[id]
-                ? `?tab=${encodeURIComponent(SERVICE_TAB_MAP[id])}`
-                : ""
-                }`}
-            >
-              <button className="bg-white rounded-full py-2 px-7 border-2 font-[textFont] border-gray-300 text-gray-950 hover:bg-transparent hover:text-white transition">
-                Portfolio
-                <i className="fa-solid fa-arrow-right pl-2"></i>
-              </button>
-            </Link>
+            <div className="pt-6">
+              <Link
+                to={`/portfolio?tab=${encodeURIComponent(
+                  SERVICE_TAB_MAP[id] || SERVICE_TAB_MAP[service?.id] || service?.title || "All"
+                )}`}
+              >
+                <button className="bg-white rounded-full py-2 px-7 border-2 font-[textFont] border-gray-300 text-gray-950 hover:bg-transparent hover:text-white transition">
+                  Portfolio
+                  <i className="fa-solid fa-arrow-right pl-2"></i>
+                </button>
+              </Link>
+            </div>
 
           </div>
 

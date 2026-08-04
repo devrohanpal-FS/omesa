@@ -170,25 +170,24 @@ export default function CaseStudyDetail() {
 
               {/* Deliverables Section */}
               {study.deliverables && study.deliverables.length > 0 && (
-                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
-                  <h3 className="text-xl font-[HeadingFont] text-white font-semibold border-b border-gray-800 pb-3 flex items-center gap-2">
-                    📦 Key Deliverables
+                <div className="bg-slate-900 border border-slate-800 rounded-lg p-6">
+                  <h3 className="text-xl font-[heading] text-gray-300 mb-6 text-left">
+                    Key Deliverables
                   </h3>
-                  <div className="space-y-4">
+                  <ul className="list-disc ml-5 text-left">
                     {study.deliverables.map((item, index) => (
-                      <div key={index} className="flex gap-4 items-start">
-                        {item.icon ? (
-                          <span className="text-2xl mt-1 select-none">{item.icon}</span>
-                        ) : (
-                          <div className="w-2.5 h-2.5 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
-                        )}
-                        <div className="space-y-1 text-left">
-                          <h4 className="text-gray-200 font-semibold text-base font-[HeadingFont]">{item.title}</h4>
-                          <p className="text-gray-400 text-sm font-[textFont] leading-relaxed">{item.description}</p>
+                      <li key={index} className="py-2">
+                        <div className="text-gray-300 text-xl font-[textFont]">
+                          {item.title}
+                          {item.description && (
+                            <span className="block text-gray-400 text-sm font-[textFont] leading-relaxed mt-1">
+                              {item.description}
+                            </span>
+                          )}
                         </div>
-                      </div>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </div>
               )}
 

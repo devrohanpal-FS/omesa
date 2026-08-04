@@ -76,12 +76,12 @@ export default function AboutSection({ isPreview = false }) {
                       if (stripped.length <= 220) return stripped;
                       return stripped.slice(0, 220).trim() + "...";
                     })()}</p>
-                    <Link
+                    {/* <Link
                       to="/about"
                       className="inline-block mt-4 text-blue-500 hover:text-blue-400 font-semibold transition"
                     >
                       Read More →
-                    </Link>
+                    </Link> */}
                   </div>
                 ) : (
                   <div dangerouslySetInnerHTML={{ __html: Data?.Description }} />

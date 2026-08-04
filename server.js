@@ -878,7 +878,7 @@ app.delete("/api/team-members/:id", authenticate, async (req, res) => {
 app.use(express.static(path.join(process.cwd(), "dist")));
 
 // Wildcard route to serve React's index.html for clientside routing fallback
-app.get("*", (req, res) => {
+app.get("*any", (req, res) => {
   res.sendFile(path.join(process.cwd(), "dist", "index.html"));
 });
 
