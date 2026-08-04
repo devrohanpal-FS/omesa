@@ -28,7 +28,7 @@ The Admin Panel features **10 content sections** accessible via the left sidebar
   2. Modify the following fields:
      - **Heading**: The main title text (e.g. *Omesa Marketing is where strategy meets experience.*).
      - **Description**: Rich HTML content. You can write paragraphs, format text using bold (`B`), italic (`I`), create headers (`H3`), lists, or insert links using the built-in toolbar.
-     - **CTA (Call to Action Link)**: Link/URL destination for the action button (e.g., `https://airtable.com/account`).
+     - **CTA (Call to Action Link)**: Link/URL destination for the action button (e.g., `https://omesa.in`).
      - **Years of Experience**: A number representing your active years.
      - **Projects**: Total successful projects count.
      - **Satisfaction %**: Customer satisfaction percentage.
