@@ -297,23 +297,28 @@ export default function Dashboard() {
   };
 
   // CRUD Operations
-  const handleSaveEdit = async (e) => {
+  const handleSaveEdit = async (e, itemToSave = null) => {
     e.preventDefault();
     setError("");
     setSuccess("");
+    const item = itemToSave || editItem;
+    if (!item) {
+      setError("No item selected for saving.");
+      return;
+    }
     try {
       let endpoint = "";
-      if (activeTab === "AboutUs") endpoint = `/api/about-us/${editItem.id}`;
-      else if (activeTab === "ClientsLogo") endpoint = `/api/clients-logo/${editItem.Id || editItem.id}`;
-      else if (activeTab === "PortfolioTiles") endpoint = `/api/portfolio-tiles/${editItem.Id || editItem.id}`;
-      else if (activeTab === "Services") endpoint = `/api/services/${editItem.Id || editItem.id}`;
-      else if (activeTab === "CaseStudies") endpoint = `/api/case-studies/${editItem.Id || editItem.id}`;
-      else if (activeTab === "UpcomingEvents") endpoint = `/api/upcoming-events/${editItem.Id || editItem.id}`;
-      else if (activeTab === "Banner") endpoint = `/api/banner/${editItem.id}`;
-      else if (activeTab === "Testimonial") endpoint = `/api/testimonials/${editItem.Id || editItem.id}`;
-      else if (activeTab === "TeamMember") endpoint = `/api/team-members/${editItem.Id || editItem.id}`;
+      if (activeTab === "AboutUs") endpoint = `/api/about-us/${item.id}`;
+      else if (activeTab === "ClientsLogo") endpoint = `/api/clients-logo/${item.Id || item.id}`;
+      else if (activeTab === "PortfolioTiles") endpoint = `/api/portfolio-tiles/${item.Id || item.id}`;
+      else if (activeTab === "Services") endpoint = `/api/services/${item.Id || item.id}`;
+      else if (activeTab === "CaseStudies") endpoint = `/api/case-studies/${item.Id || item.id}`;
+      else if (activeTab === "UpcomingEvents") endpoint = `/api/upcoming-events/${item.Id || item.id}`;
+      else if (activeTab === "Banner") endpoint = `/api/banner/${item.id}`;
+      else if (activeTab === "Testimonial") endpoint = `/api/testimonials/${item.Id || item.id}`;
+      else if (activeTab === "TeamMember") endpoint = `/api/team-members/${item.Id || item.id}`;
 
-      await api.put(endpoint, editItem);
+      await api.put(endpoint, item);
       setSuccess("Record updated successfully!");
       setEditItem(null);
       fetchData(activeTab);
@@ -581,10 +586,7 @@ export default function Dashboard() {
                 <div>
                   <h2 className="text-xl font-[heading] mb-6">Manage {activeTab}</h2>
                   <form
-                    onSubmit={(e) => {
-                      setEditItem(data[0]);
-                      handleSaveEdit(e);
-                    }}
+                    onSubmit={(e) => handleSaveEdit(e, data[0])}
                     className="space-y-6"
                   >
                     {activeTab === "AboutUs" && (
@@ -603,6 +605,16 @@ export default function Dashboard() {
                           value={data[0]?.Description || ""}
                           onChange={(val) => setData([{ ...data[0], Description: val }])}
                         />
+                        <div>
+                          <label className="block text-gray-300 text-sm mb-2 font-[textFont]">CTA (Call to Action Link)</label>
+                          <input
+                            type="text"
+                            value={data[0]?.CTA || ""}
+                            onChange={(e) => setData([{ ...data[0], CTA: e.target.value }])}
+                            className="w-full bg-slate-900 border border-slate-800 rounded-xl text-white px-4 py-3 font-[textFont] focus:outline-none focus:border-blue-600 transition"
+                            placeholder="https://..."
+                          />
+                        </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div>
                             <label className="block text-gray-300 text-sm mb-2 font-[textFont]">Years of Experience</label>
@@ -715,7 +727,6 @@ export default function Dashboard() {
 
                     <button
                       type="submit"
-                      onClick={() => setEditItem(data[0])}
                       className="bg-blue-600 hover:bg-blue-500 text-white font-[textFont] font-medium px-6 py-2.5 rounded-xl transition"
                     >
                       Save Changes

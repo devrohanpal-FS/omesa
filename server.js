@@ -188,7 +188,20 @@ app.get("/api/auth/me", authenticate, (req, res) => {
 // 1. AboutUs
 app.get("/api/about-us", async (req, res) => {
   try {
-    const records = await prisma.aboutUs.findMany();
+    let records = await prisma.aboutUs.findMany();
+    if (records.length === 0) {
+      const defaultAbout = await prisma.aboutUs.create({
+        data: {
+          Heding: "About Us Heading",
+          Description: "About Us Description",
+          CTA: "",
+          experience: 0,
+          project: 0,
+          satisfaction: 0
+        }
+      });
+      records = [defaultAbout];
+    }
     // Return format matching NocoDB { list: [...] }
     res.json({ list: records });
   } catch (err) {
@@ -206,9 +219,9 @@ app.put("/api/about-us/:id", authenticate, async (req, res) => {
         Heding,
         Description,
         CTA,
-        experience: experience ? parseInt(experience) : undefined,
-        project: project ? parseInt(project) : undefined,
-        satisfaction: satisfaction ? parseInt(satisfaction) : undefined,
+        experience: (experience !== undefined && experience !== null && experience !== "") ? parseInt(experience) : undefined,
+        project: (project !== undefined && project !== null && project !== "") ? parseInt(project) : undefined,
+        satisfaction: (satisfaction !== undefined && satisfaction !== null && satisfaction !== "") ? parseInt(satisfaction) : undefined,
       },
     });
     res.json(updated);
@@ -657,7 +670,18 @@ app.delete("/api/upcoming-events/:id", authenticate, async (req, res) => {
 // 7. Banner
 app.get("/api/banner", async (req, res) => {
   try {
-    const records = await prisma.banner.findMany();
+    let records = await prisma.banner.findMany();
+    if (records.length === 0) {
+      const defaultBanner = await prisma.banner.create({
+        data: {
+          Title: "Hero Title",
+          heading_line_2: "Hero Subtitle",
+          desc: "Hero Description",
+          video_url: ""
+        }
+      });
+      records = [defaultBanner];
+    }
     res.json({ list: records });
   } catch (err) {
     res.status(500).json({ error: err.message });
